@@ -1,0 +1,128 @@
+using Microsoft.EntityFrameworkCore;
+
+namespace kmg4.Data
+{
+    public class Asset
+    {
+        public int AssetId { get; set; }
+        public string Name { get; set; } = null!;
+        public string AssetTag { get; set; } = null!;
+        public int AssetTypeId { get; set; }
+        public string? Location { get; set; }
+        public string? Status { get; set; }
+
+        public AssetType AssetType { get; set; } = null!;
+    }
+
+    public class AssetType
+    {
+        public int AssetTypeId { get; set; }
+        public string Name { get; set; } = null!;
+        public ICollection<Asset> Assets { get; set; } = new List<Asset>();
+    }
+
+    public class ServiceRequest
+    {
+        public int RequestId { get; set; }
+        public int AssetId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string Status { get; set; } = null!;
+        public string? Description { get; set; }
+        public string? AssignedTo { get; set; }
+
+        public Asset Asset { get; set; } = null!;
+    }
+
+    public class KmgMobileContext : DbContext
+    {
+        public KmgMobileContext(DbContextOptions<KmgMobileContext> options)
+            : base(options) { }
+
+        public DbSet<Asset> Assets => Set<Asset>();
+        public DbSet<AssetType> AssetTypes => Set<AssetType>();
+        public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
+    }
+
+}
+
+using Microsoft.EntityFrameworkCore;
+using kmg4.Data;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddDbContext<DbContext>(opt =>
+opt.UseSqlServer(builder.Configuration.GetConnectionString("KmgMobile")));
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+
+app.UseAuthorization();
+
+app.MapControllers();
+
+app.Run();
+
+
+using kmg4.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
+
+namespace kmg4.Controllers
+{
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AssetsController : ControllerBase
+    {
+        private readonly KmgMobileContext _context;
+
+        public AssetsController(KmgMobileContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Asset>>> GetAssets()
+        {
+            return await _context.Assets
+                .Include(a => a.AssetType)
+                .ToListAsync();
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<ActionResult<Asset>> GetAsset(int id)
+        {
+            var asset = await _context.Assets
+                .Include(a => a.AssetType)
+                .FirstOrDefaultAsync(a => a.AssetId == id);
+
+            if (asset == null)
+                return NotFound();
+
+            return asset;
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<Asset>> CreateAsset(Asset asset)
+        {
+            _context.Assets.Add(asset);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetAsset), new { id = asset.AssetId }, asset);
+        }
+    }
+}
