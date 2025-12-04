@@ -1,0 +1,11 @@
+<Lang>
+  <Item Key="Dashboard.Title" Value="Inventory Dashboard" />
+  <Item Key="Dashboard.InventoryControlButton" Value="Inventory Control" />
+  <Item Key="Dashboard.SpendingByDept" Value="EM Spending by Department" />
+  <Item Key="Dashboard.MostUsedParts" Value="Monthly Report for Most-Used Parts" />
+  <Item Key="Dashboard.CostlyAssets" Value="Monthly Report of Costly Assets" />
+  <Item Key="Dashboard.DeptRatio" Value="Department Spending Ratio" />
+  <Item Key="Dashboard.MonthlyDeptSpending" Value="Monthly Department Spending" />
+  <Item Key="Common.Close" Value="Close" />
+  <Item Key="Common.Language" Value="Language:" />
+</Lang>

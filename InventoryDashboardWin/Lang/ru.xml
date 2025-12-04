@@ -1,0 +1,11 @@
+<Lang>
+  <Item Key="Dashboard.Title" Value="Панель управления запасами" />
+  <Item Key="Dashboard.InventoryControlButton" Value="Управление запасами" />
+  <Item Key="Dashboard.SpendingByDept" Value="Затраты по подразделениям" />
+  <Item Key="Dashboard.MostUsedParts" Value="Отчёт по часто используемым деталям" />
+  <Item Key="Dashboard.CostlyAssets" Value="Отчёт по дорогим активам" />
+  <Item Key="Dashboard.DeptRatio" Value="Доля затрат подразделений" />
+  <Item Key="Dashboard.MonthlyDeptSpending" Value="Ежемесячные затраты подразделений" />
+  <Item Key="Common.Close" Value="Закрыть" />
+  <Item Key="Common.Language" Value="Язык:" />
+</Lang>
