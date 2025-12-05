@@ -1,0 +1,135 @@
+# ---------------------------------------------------------
+#   FULL DATA ANALYSIS SCRIPT (10 ANALYSES in one file)
+#   version WITHOUT missingno
+# ---------------------------------------------------------
+
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+plt.style.use("seaborn-v0_8")
+sns.set(font_scale=1.1)
+
+# ---------------------------------------------------------
+# 1. Загружаем данные (CSV или Excel)
+# ---------------------------------------------------------
+
+FILE_PATH = "data.csv"   # ← укажи свой файл
+
+if FILE_PATH.endswith(".csv"):
+    df = pd.read_csv(FILE_PATH, encoding="utf-8")
+else:
+    df = pd.read_excel(FILE_PATH)
+
+print("Файл успешно загружен!")
+print(df.head())
+
+# ---------------------------------------------------------
+# 2. Общий обзор данных
+# ---------------------------------------------------------
+print("\n=== INFO ===")
+print(df.info())
+
+print("\n=== DESCRIBE ===")
+print(df.describe(include="all"))
+
+print("\n=== ПРОПУСКИ ===")
+print(df.isnull().sum())
+
+# ---------------------------------------------------------
+# 3. Корреляция числовых признаков (heatmap)
+# ---------------------------------------------------------
+try:
+    corr = df.corr(numeric_only=True)
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(corr, annot=True, cmap="coolwarm")
+    plt.title("Корреляционная матрица")
+    plt.show()
+except Exception as e:
+    print("Не удалось построить корреляцию:", e)
+
+# ---------------------------------------------------------
+# 4. Анализ выбросов (boxplot)
+# ---------------------------------------------------------
+num_cols = df.select_dtypes(include="number").columns
+
+if len(num_cols) > 0:
+    plt.figure(figsize=(10, 5))
+    sns.boxplot(data=df[num_cols])
+    plt.title("Выбросы по числовым данным")
+    plt.xticks(rotation=45)
+    plt.show()
+else:
+    print("Нет числовых столбцов для boxplot.")
+
+# ---------------------------------------------------------
+# 5. Топ-значений категориальных столбцов
+# ---------------------------------------------------------
+cat_cols = df.select_dtypes(include="object").columns
+
+for col in cat_cols:
+    print(f"\n=== ТОП значений в колонке: {col} ===")
+    print(df[col].value_counts().head(10))
+
+# ---------------------------------------------------------
+# 6. Группировка по первой категории
+# ---------------------------------------------------------
+if len(cat_cols) > 0 and len(num_cols) > 0:
+    col_cat = cat_cols[0]
+    print(f"\n=== Средние значения по группам: {col_cat} ===")
+    print(df.groupby(col_cat)[num_cols].mean())
+else:
+    print("\nНет подходящих столбцов для группировки.")
+
+# ---------------------------------------------------------
+# 7. Анализ тренда по времени
+# ---------------------------------------------------------
+date_cols = [c for c in df.columns if "date" in c.lower() or "time" in c.lower()]
+
+if len(date_cols) > 0:
+    col_date = date_cols[0]
+    df[col_date] = pd.to_datetime(df[col_date], errors="ignore")
+
+    try:
+        df_sorted = df.sort_values(col_date)
+        df_sorted.set_index(col_date)[num_cols[0]].plot(figsize=(10, 5))
+        plt.title(f"Тренд по времени: {num_cols[0]}")
+        plt.show()
+    except:
+        print("Не удалось построить временной график.")
+else:
+    print("\nДата-столбцов нет.")
+
+# ---------------------------------------------------------
+# 8. Scatterplot (зависимость двух числовых значений)
+# ---------------------------------------------------------
+if len(num_cols) >= 2:
+    plt.figure(figsize=(8, 5))
+    sns.scatterplot(x=num_cols[0], y=num_cols[1], data=df)
+    plt.title(f"Scatter: {num_cols[0]} vs {num_cols[1]}")
+    plt.show()
+else:
+    print("Недостаточно числовых колонок для scatterplot.")
+
+# ---------------------------------------------------------
+# 9. Barplot (категория → числовое значение)
+# ---------------------------------------------------------
+if len(cat_cols) > 0 and len(num_cols) > 0:
+    plt.figure(figsize=(10, 5))
+    sns.barplot(x=cat_cols[0], y=num_cols[0], data=df)
+    plt.title(f"Barplot: {cat_cols[0]} → {num_cols[0]}")
+    plt.xticks(rotation=45)
+    plt.show()
+else:
+    print("Нет данных для barplot.")
+
+# ---------------------------------------------------------
+# 10. Pairplot (матрица распределений)
+# ---------------------------------------------------------
+if len(num_cols) > 1:
+    sns.pairplot(df[num_cols])
+    plt.show()
+else:
+    print("Недостаточно числовых полей для pairplot.")
+
+print("\n=== Анализ завершён успешно! ===")
